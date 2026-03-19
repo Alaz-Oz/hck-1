@@ -1,3 +1,4 @@
+package tests;
 import java.lang.reflect.Method;
 
 import org.openqa.selenium.OutputType;
@@ -6,6 +7,7 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.ITestResult;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
@@ -18,12 +20,15 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 
+import utils.Config;
+
 public class BaseTest {
 
 	public static ExtentReports extent;
 
 	protected static ThreadLocal<ExtentTest> localTest = new ThreadLocal<>();
 	protected static ThreadLocal<WebDriver> localWebDriver = new ThreadLocal<>();
+	protected static ThreadLocal<WebDriverWait> localWait = new ThreadLocal<>();
 
 	@BeforeSuite
 	protected static void setup() {
@@ -38,7 +43,11 @@ public class BaseTest {
 		driver.manage().window().maximize();
 		driver.manage().timeouts().implicitlyWait(Config.IMPLICIT_WAIT_TIME);
 		localWebDriver.set(driver);
+		
+		localWait.set(new WebDriverWait(driver, Config.WAIT_TIME));
+
 	}
+	
 
 	@BeforeMethod
 	protected void createTest(Method method) {
@@ -74,6 +83,10 @@ public class BaseTest {
 
 	protected ExtentTest getTest() {
 		return localTest.get();
+	}
+	
+	protected WebDriverWait getWait() {
+		return localWait.get();
 	}
 
 	protected void logScreenshot(String name) {
