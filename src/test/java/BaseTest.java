@@ -7,8 +7,10 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.interactions.Action;
 import org.openqa.selenium.interactions.Actions;
 import org.testng.ITestResult;
+import org.testng.annotations.AfterClass;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.AfterSuite;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.BeforeSuite;
 
@@ -19,25 +21,25 @@ import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 public class BaseTest {
 
 	public static ExtentReports extent;
-	
+
 	protected static ThreadLocal<ExtentTest> localTest = new ThreadLocal<>();
 	protected static ThreadLocal<WebDriver> localWebDriver = new ThreadLocal<>();
 
 	@BeforeSuite
-	protected void setup() {
+	protected static void setup() {
 		ExtentSparkReporter spark = new ExtentSparkReporter(Config.SPARK_REPORT_FILE);
 		extent = new ExtentReports();
 		extent.attachReporter(spark);
 	}
 
-	@BeforeMethod
+	@BeforeClass
 	protected void createWebDriver() {
 		WebDriver driver = new ChromeDriver();
 		driver.manage().window().maximize();
 		driver.manage().timeouts().implicitlyWait(Config.IMPLICIT_WAIT_TIME);
 		localWebDriver.set(driver);
 	}
-	
+
 	@BeforeMethod
 	protected void createTest(Method method) {
 		ExtentTest test = extent.createTest(method.getName());
@@ -47,26 +49,35 @@ public class BaseTest {
 	@AfterMethod
 	public void endTest(ITestResult result) {
 		if (result.getStatus() == ITestResult.FAILURE) {
-			localTest.get().fail(result.getThrowable());
+			getTest().fail(result.getThrowable());
 
-			
-		}else localTest.get().pass("pass");
+			logScreenshot("Last Screen");
+
+		} else
+			getTest().pass("pass");
+
 	}
 
-	@AfterMethod
+	@AfterClass
 	public void closeWebDriver() {
-		logScreenshot(localWebDriver.get(), localTest.get());
-		logScreenshot(localWebDriver.get(), localTest.get());
-		localWebDriver.get().quit();
+		getDriver().quit();
 	}
 
 	@AfterSuite
 	public void teatDown() {
 		extent.flush();
 	}
-	
-	protected void logScreenshot(WebDriver driver, ExtentTest test) {
-		String base = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BASE64);
-		test.addScreenCaptureFromBase64String(base);
+
+	protected WebDriver getDriver() {
+		return localWebDriver.get();
+	}
+
+	protected ExtentTest getTest() {
+		return localTest.get();
+	}
+
+	protected void logScreenshot(String name) {
+		String base = ((TakesScreenshot) getDriver()).getScreenshotAs(OutputType.BASE64);
+		getTest().addScreenCaptureFromBase64String(base, name);
 	}
 }

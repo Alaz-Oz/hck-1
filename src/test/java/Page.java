@@ -1,5 +1,3 @@
-import java.util.function.Function;
-
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.PageFactory;
@@ -18,15 +16,6 @@ public class Page {
 	}
 
 	public WebElement waitForVisibility(WebElement element) {
-		
-		wait.until((WebDriver t) ->  {
-				// TODO Auto-generated method stub
-				return null;
-			
-		});
-		
-		
-		
 		return wait.until(ExpectedConditions.visibilityOf(element));
 	}
 
